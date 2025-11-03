@@ -1,0 +1,2401 @@
+openapi: 3.0.1
+info:
+  title: AIOF Fitness API
+  description: |
+    REST API for AIOF Fitness App - A mindful fitness tracking application.
+
+    Features:
+    - User authentication (JWT)
+    - Custom workout creation and scheduling
+    - Exercise library integration
+    - Workout session tracking with timers
+    - Mandatory journal entries after workouts
+    - Progress tracking and streak system
+    - Weight logging
+
+    For Flutter model generation: Export this spec from /v3/api-docs
+  contact:
+    name: AIOF Team
+    email: support@aiof-fitness.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+  - url: https://api.aiof-fitness.com
+    description: Production Server (Update when deployed)
+security:
+  - bearerAuth: []
+tags:
+  - name: Authentication
+    description: User authentication and registration endpoints
+  - name: Weight Tracking
+    description: Body weight logging and history
+  - name: Exercises
+    description: Exercise library endpoints (powered by wger API)
+  - name: Journals
+    description: Workout journal entries with images
+  - name: Workouts
+    description: Workout management endpoints
+  - name: Progress
+    description: Progress tracking and statistics
+  - name: Workout Sessions
+    description: Track active workout executions
+  - name: User Profile
+    description: User profile management endpoints
+paths:
+  /api/workouts/{id}:
+    get:
+      tags:
+        - Workouts
+      summary: Get workout by ID
+      description: Retrieve a specific workout with all exercises and schedule
+      operationId: getWorkoutById
+      parameters:
+        - name: id
+          in: path
+          description: Workout ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutResponse'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Workouts
+      summary: Update workout
+      description: Update an existing workout (name, description, exercises, or schedule)
+      operationId: updateWorkout
+      parameters:
+        - name: id
+          in: path
+          description: Workout ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkoutRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutResponse'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Workouts
+      summary: Delete workout
+      description: Delete a workout and all associated exercises and schedules
+      operationId: deleteWorkout
+      parameters:
+        - name: id
+          in: path
+          description: Workout ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVoid'
+      security:
+        - bearerAuth: []
+  /api/weight/{id}:
+    get:
+      tags:
+        - Weight Tracking
+      summary: Get weight log by ID
+      description: Retrieve a specific weight log entry
+      operationId: getWeightLogById
+      parameters:
+        - name: id
+          in: path
+          description: Weight log ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWeightLogResponse'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Weight Tracking
+      summary: Update weight log
+      description: Update an existing weight log entry
+      operationId: updateWeightLog
+      parameters:
+        - name: id
+          in: path
+          description: Weight log ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogWeightRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWeightLogResponse'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Weight Tracking
+      summary: Delete weight log
+      description: Delete a weight log entry
+      operationId: deleteWeightLog
+      parameters:
+        - name: id
+          in: path
+          description: Weight log ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVoid'
+      security:
+        - bearerAuth: []
+  /api/users/profile:
+    get:
+      tags:
+        - User Profile
+      summary: Get user profile
+      description: Retrieve authenticated user's profile information
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseUserResponse'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - User Profile
+      summary: Update user profile
+      description: Update authenticated user's profile information
+      operationId: updateUserProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseUserResponse'
+      security:
+        - bearerAuth: []
+  /api/sessions/{id}/complete:
+    put:
+      tags:
+        - Workout Sessions
+      summary: Complete session
+      description: Mark session as completed (ready for journal entry)
+      operationId: completeSession
+      parameters:
+        - name: id
+          in: path
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteSessionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutSessionResponse'
+      security:
+        - bearerAuth: []
+  /api/journals/{id}:
+    get:
+      tags:
+        - Journals
+      summary: Get journal by ID
+      description: Retrieve a specific journal entry
+      operationId: getJournalById
+      parameters:
+        - name: id
+          in: path
+          description: Journal ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseJournalEntryResponse'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Journals
+      summary: Update journal entry
+      description: Update journal description and/or image
+      operationId: updateJournal
+      parameters:
+        - name: id
+          in: path
+          description: Journal ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: description
+          in: query
+          description: New journal description
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  description: New journal image
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseJournalEntryResponse'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Journals
+      summary: Delete journal entry
+      description: Delete a journal entry and its associated image
+      operationId: deleteJournal
+      parameters:
+        - name: id
+          in: path
+          description: Journal ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVoid'
+      security:
+        - bearerAuth: []
+  /api/workouts:
+    get:
+      tags:
+        - Workouts
+      summary: Get all workouts
+      description: Retrieve all workouts for the authenticated user
+      operationId: getAllWorkouts
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListWorkoutResponse'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Workouts
+      summary: Create workout
+      description: Create a new workout with exercises and optional scheduling
+      operationId: createWorkout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkoutRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutResponse'
+      security:
+        - bearerAuth: []
+  /api/weight:
+    post:
+      tags:
+        - Weight Tracking
+      summary: Log body weight
+      description: Record body weight for a specific date
+      operationId: logWeight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogWeightRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWeightLogResponse'
+      security:
+        - bearerAuth: []
+  /api/sessions:
+    post:
+      tags:
+        - Workout Sessions
+      summary: Start workout session
+      description: Begin a new workout session with timer
+      operationId: startSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutSessionResponse'
+      security:
+        - bearerAuth: []
+  /api/sessions/{id}/exercises:
+    post:
+      tags:
+        - Workout Sessions
+      summary: Log exercise
+      description: Add an exercise log to the active session
+      operationId: logExercise
+      parameters:
+        - name: id
+          in: path
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogExerciseRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutSessionResponse'
+      security:
+        - bearerAuth: []
+  /api/journals:
+    get:
+      tags:
+        - Journals
+      summary: Get all journals
+      description: Retrieve paginated list of journal entries
+      operationId: getAllJournals
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: pageSize
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponsePageJournalEntryResponse'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Journals
+      summary: Create journal entry
+      description: Create a journal entry with image and description after completing a workout
+      operationId: createJournal
+      parameters:
+        - name: sessionId
+          in: query
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: description
+          in: query
+          description: Journal description (10-5000 characters)
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  description: Journal image (max 5MB, JPG/PNG/WebP)
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseJournalEntryResponse'
+      security:
+        - bearerAuth: []
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Create a new user account with email, password, and profile information
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request data
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseAuthResponse'
+        '409':
+          description: Email already registered
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseAuthResponse'
+  /api/auth/refresh-token:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Generate new access token using refresh token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseAuthResponse'
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password, returns JWT tokens
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Login successful
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseAuthResponse'
+  /api/workouts/schedule:
+    get:
+      tags:
+        - Workouts
+      summary: Get weekly schedule
+      description: Retrieve all workouts organized by day of week
+      operationId: getWeeklySchedule
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListWeeklyScheduleResponse'
+      security:
+        - bearerAuth: []
+  /api/workouts/schedule/{day}:
+    get:
+      tags:
+        - Workouts
+      summary: Get workouts for specific day
+      description: Retrieve all workouts scheduled for a specific day of the week
+      operationId: getWorkoutsByDay
+      parameters:
+        - name: day
+          in: path
+          description: Day of week (e.g., MONDAY, TUESDAY)
+          required: true
+          schema:
+            type: string
+          example: MONDAY
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListWorkoutResponse'
+      security:
+        - bearerAuth: []
+  /api/weight/history:
+    get:
+      tags:
+        - Weight Tracking
+      summary: Get weight history
+      description: Retrieve weight logs with statistics for a date range
+      operationId: getWeightHistory
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date (optional)
+          required: false
+          schema:
+            type: string
+            format: date
+          example: '2025-01-01'
+        - name: endDate
+          in: query
+          description: End date (optional)
+          required: false
+          schema:
+            type: string
+            format: date
+          example: '2025-11-02'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWeightHistoryResponse'
+      security:
+        - bearerAuth: []
+  /api/sessions/{id}:
+    get:
+      tags:
+        - Workout Sessions
+      summary: Get session by ID
+      description: Retrieve detailed session information including all exercise logs
+      operationId: getSessionById
+      parameters:
+        - name: id
+          in: path
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutSessionResponse'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Workout Sessions
+      summary: Abandon session
+      description: Mark an active session as abandoned
+      operationId: abandonSession
+      parameters:
+        - name: id
+          in: path
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVoid'
+      security:
+        - bearerAuth: []
+  /api/sessions/history:
+    get:
+      tags:
+        - Workout Sessions
+      summary: Get workout history
+      description: Retrieve paginated list of past workout sessions
+      operationId: getSessionHistory
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: pageSize
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseSessionHistoryResponse'
+      security:
+        - bearerAuth: []
+  /api/sessions/active:
+    get:
+      tags:
+        - Workout Sessions
+      summary: Get active session
+      description: Retrieve the current active workout session if exists
+      operationId: getActiveSession
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseWorkoutSessionResponse'
+      security:
+        - bearerAuth: []
+  /api/progress/streak:
+    get:
+      tags:
+        - Progress
+      summary: Get workout streak
+      description: Retrieve current workout streak and related information
+      operationId: getStreak
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStreakResponse'
+      security:
+        - bearerAuth: []
+  /api/progress/stats:
+    get:
+      tags:
+        - Progress
+      summary: Get progress statistics
+      description: Retrieve overall progress stats including workouts, streaks, and weight
+      operationId: getProgressStats
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseProgressStatsResponse'
+      security:
+        - bearerAuth: []
+  /api/journals/session/{sessionId}:
+    get:
+      tags:
+        - Journals
+      summary: Get journal by session
+      description: Retrieve journal entry for a specific workout session
+      operationId: getJournalBySession
+      parameters:
+        - name: sessionId
+          in: path
+          description: Session ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseJournalEntryResponse'
+      security:
+        - bearerAuth: []
+  /api/exercises:
+    get:
+      tags:
+        - Exercises
+      summary: Search exercises
+      description: Search and filter exercises from the wger database with pagination
+      operationId: searchExercises
+      parameters:
+        - name: search
+          in: query
+          description: Search by exercise name
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category (e.g., 'Chest', 'Back')
+          required: false
+          schema:
+            type: string
+        - name: muscleGroup
+          in: query
+          description: Filter by muscle group (e.g., 'Pectoralis', 'Biceps')
+          required: false
+          schema:
+            type: string
+        - name: equipment
+          in: query
+          description: Filter by equipment (e.g., 'Barbell', 'Dumbbell')
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 'Page number (default: 1)'
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          description: 'Page size (default: 20, max: 100)'
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseExerciseSearchResponse'
+      security:
+        - bearerAuth: []
+  /api/exercises/{id}:
+    get:
+      tags:
+        - Exercises
+      summary: Get exercise by ID
+      description: Retrieve detailed information about a specific exercise
+      operationId: getExerciseById
+      parameters:
+        - name: id
+          in: path
+          description: Exercise ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseExerciseResponse'
+      security:
+        - bearerAuth: []
+  /api/exercises/category/{categoryName}:
+    get:
+      tags:
+        - Exercises
+      summary: Get exercises by category
+      description: Retrieve all exercises in a specific category
+      operationId: getExercisesByCategory
+      parameters:
+        - name: categoryName
+          in: path
+          description: Category name (e.g., 'Chest', 'Back')
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListExerciseResponse'
+      security:
+        - bearerAuth: []
+  /api/exercises/categories:
+    get:
+      tags:
+        - Exercises
+      summary: Get exercise categories
+      description: Retrieve all available exercise categories/muscle groups
+      operationId: getCategories
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListExerciseCategoryResponse'
+      security:
+        - bearerAuth: []
+  /api/users/account:
+    delete:
+      tags:
+        - User Profile
+      summary: Deactivate account
+      description: Deactivate authenticated user's account (soft delete)
+      operationId: deactivateAccount
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVoid'
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    UpdateWorkoutRequest:
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 2
+          type: string
+          description: Workout name
+          example: Upper Body Day (Updated)
+        description:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Workout description
+          example: Updated description
+        exercises:
+          type: array
+          description: List of exercises (replaces all existing)
+          items:
+            $ref: '#/components/schemas/WorkoutExerciseRequest'
+        scheduledDays:
+          type: array
+          description: Days to schedule this workout (replaces all existing)
+          example:
+            - MONDAY
+            - THURSDAY
+          items:
+            type: string
+            description: Days to schedule this workout (replaces all existing)
+            example: '["MONDAY","THURSDAY"]'
+      description: Update existing workout request
+    WorkoutExerciseRequest:
+      required:
+        - exerciseId
+        - exerciseName
+        - orderIndex
+      type: object
+      properties:
+        exerciseId:
+          type: string
+          description: Exercise ID from wger API
+          example: '123'
+        exerciseName:
+          type: string
+          description: Exercise name
+          example: Bench Press
+        muscleGroup:
+          type: string
+          description: Muscle group targeted
+          example: Chest
+        equipment:
+          type: string
+          description: Equipment needed
+          example: Barbell
+        sets:
+          type: integer
+          description: Number of sets
+          format: int32
+          example: 3
+        reps:
+          type: integer
+          description: Number of reps per set
+          format: int32
+          example: 10
+        weight:
+          type: number
+          description: Weight in kg or lbs
+          example: 60.5
+        notes:
+          type: string
+          description: Notes for this exercise
+          example: Focus on form
+        orderIndex:
+          type: integer
+          description: Order in the workout (0-indexed)
+          format: int32
+          example: 0
+      description: Exercise to add to workout
+    ApiResponseWorkoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/WorkoutResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    WorkoutExerciseResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Exercise ID in workout
+          format: int64
+          example: 1
+        exerciseId:
+          type: string
+          description: Exercise ID from wger API
+          example: '123'
+        exerciseName:
+          type: string
+          description: Exercise name
+          example: Bench Press
+        muscleGroup:
+          type: string
+          description: Muscle group
+          example: Chest
+        equipment:
+          type: string
+          description: Equipment
+          example: Barbell
+        sets:
+          type: integer
+          description: Number of sets
+          format: int32
+          example: 3
+        reps:
+          type: integer
+          description: Number of reps
+          format: int32
+          example: 10
+        weight:
+          type: number
+          description: Weight
+          example: 60.5
+        notes:
+          type: string
+          description: Notes
+          example: Focus on form
+        orderIndex:
+          type: integer
+          description: Order in workout
+          format: int32
+          example: 0
+      description: Exercise details in a workout
+    WorkoutResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Workout ID
+          format: int64
+          example: 1
+        name:
+          type: string
+          description: Workout name
+          example: Upper Body Day
+        description:
+          type: string
+          description: Workout description
+          example: Focus on chest and back
+        exercises:
+          type: array
+          description: List of exercises in the workout
+          items:
+            $ref: '#/components/schemas/WorkoutExerciseResponse'
+        scheduledDays:
+          type: array
+          description: Scheduled days
+          example:
+            - MONDAY
+            - WEDNESDAY
+          items:
+            type: string
+            description: Scheduled days
+            example: '["MONDAY","WEDNESDAY"]'
+        exerciseCount:
+          type: integer
+          description: Number of exercises
+          format: int32
+          example: 5
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+        updatedAt:
+          type: string
+          description: Last update timestamp
+          format: date-time
+      description: Workout details with exercises and schedule
+    LogWeightRequest:
+      required:
+        - weight
+      type: object
+      properties:
+        weight:
+          minimum: 0.1
+          exclusiveMinimum: false
+          type: number
+          description: Body weight in kg or lbs
+          example: 75.5
+        logDate:
+          type: string
+          description: Log date (defaults to today if not provided)
+          format: date
+          example: '2025-11-02'
+        notes:
+          type: string
+          description: Optional notes
+          example: Feeling good!
+      description: Log body weight
+    ApiResponseWeightLogResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/WeightLogResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    WeightLogResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Weight log ID
+          format: int64
+          example: 1
+        weight:
+          type: number
+          description: Weight in kg or lbs
+          example: 75.5
+        logDate:
+          type: string
+          description: Log date
+          format: date
+          example: '2025-11-02'
+        notes:
+          type: string
+          description: Notes
+          example: Feeling good!
+        weightChange:
+          type: number
+          description: Weight change from previous entry
+          example: -0.5
+        createdAt:
+          type: string
+          description: Created timestamp
+          format: date-time
+      description: Weight log entry
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 2
+          type: string
+          description: User full name
+          example: John Doe
+        phoneNumber:
+          type: string
+          description: Phone number
+          example: '+1234567890'
+        gender:
+          type: string
+          description: Gender
+          example: MALE
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        age:
+          type: integer
+          description: Age
+          format: int32
+          example: 25
+        fitnessGoal:
+          type: string
+          description: Fitness goal
+          example: Muscle Gain
+        experienceLevel:
+          type: string
+          description: Experience level
+          example: Intermediate
+          enum:
+            - Beginner
+            - Intermediate
+            - Advanced
+      description: Update user profile request
+    ApiResponseUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/UserResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+          format: int64
+          example: 1
+        email:
+          type: string
+          description: Email address
+          example: john.doe@example.com
+        name:
+          type: string
+          description: Full name
+          example: John Doe
+        phoneNumber:
+          type: string
+          description: Phone number
+          example: '+1234567890'
+        gender:
+          type: string
+          description: Gender
+          example: MALE
+        age:
+          type: integer
+          description: Age
+          format: int32
+          example: 25
+        fitnessGoal:
+          type: string
+          description: Fitness goal
+          example: Muscle Gain
+        experienceLevel:
+          type: string
+          description: Experience level
+          example: Beginner
+        createdAt:
+          type: string
+          description: Account creation date
+          format: date-time
+        updatedAt:
+          type: string
+          description: Last update date
+          format: date-time
+      description: User profile information
+    CompleteSessionRequest:
+      type: object
+      properties:
+        exercises:
+          type: array
+          description: Final list of all exercises performed (optional - can use logged exercises)
+          items:
+            $ref: '#/components/schemas/LogExerciseRequest'
+        notes:
+          type: string
+          description: Additional notes about the session
+          example: Great workout!
+      description: Complete an active workout session
+    LogExerciseRequest:
+      required:
+        - exerciseId
+        - exerciseName
+        - orderIndex
+      type: object
+      properties:
+        exerciseId:
+          type: string
+          description: Exercise ID from wger API
+          example: '228'
+        exerciseName:
+          type: string
+          description: Exercise name
+          example: Bench Press
+        muscleGroup:
+          type: string
+          description: Muscle group
+          example: Chest
+        equipment:
+          type: string
+          description: Equipment used
+          example: Barbell
+        sets:
+          type: integer
+          description: Number of sets completed
+          format: int32
+          example: 4
+        reps:
+          type: integer
+          description: Number of reps per set
+          format: int32
+          example: 10
+        weight:
+          type: number
+          description: Weight used (kg or lbs)
+          example: 60.5
+        durationSeconds:
+          type: integer
+          description: Time spent on this exercise (seconds)
+          format: int32
+          example: 180
+        notes:
+          type: string
+          description: Notes about this exercise
+          example: Felt strong today
+        orderIndex:
+          type: integer
+          description: Order in the workout
+          format: int32
+          example: 0
+      description: Log an exercise during active session
+    ApiResponseWorkoutSessionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/WorkoutSessionResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ExerciseLogResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Log ID
+          format: int64
+          example: 1
+        exerciseId:
+          type: string
+          description: Exercise ID
+          example: '228'
+        exerciseName:
+          type: string
+          description: Exercise name
+          example: Bench Press
+        muscleGroup:
+          type: string
+          description: Muscle group
+          example: Chest
+        equipment:
+          type: string
+          description: Equipment
+          example: Barbell
+        sets:
+          type: integer
+          description: Sets completed
+          format: int32
+          example: 4
+        reps:
+          type: integer
+          description: Reps per set
+          format: int32
+          example: 10
+        weight:
+          type: number
+          description: Weight used
+          example: 60.5
+        durationSeconds:
+          type: integer
+          description: Duration in seconds
+          format: int32
+          example: 180
+        notes:
+          type: string
+          description: Notes
+          example: Felt strong
+        orderIndex:
+          type: integer
+          description: Order in workout
+          format: int32
+          example: 0
+      description: Exercise performance log
+    WorkoutSessionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Session ID
+          format: int64
+          example: 1
+        workoutId:
+          type: integer
+          description: Workout template ID
+          format: int64
+          example: 1
+        workoutName:
+          type: string
+          description: Workout name
+          example: Upper Body Day
+        status:
+          type: string
+          description: Session status
+          example: IN_PROGRESS
+        startTime:
+          type: string
+          description: Start time
+          format: date-time
+        endTime:
+          type: string
+          description: End time
+          format: date-time
+        totalDurationSeconds:
+          type: integer
+          description: Total duration in seconds
+          format: int32
+          example: 5400
+        durationFormatted:
+          type: string
+          description: Total duration formatted (HH:mm:ss)
+          example: '01:30:00'
+        exercises:
+          type: array
+          description: Exercises performed
+          items:
+            $ref: '#/components/schemas/ExerciseLogResponse'
+        exerciseCount:
+          type: integer
+          description: Number of exercises
+          format: int32
+          example: 5
+        hasJournal:
+          type: boolean
+          description: Has journal entry
+          example: false
+      description: Workout session details
+    ApiResponseJournalEntryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/JournalEntryResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    JournalEntryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Journal ID
+          format: int64
+          example: 1
+        sessionId:
+          type: integer
+          description: Session ID
+          format: int64
+          example: 1
+        workoutName:
+          type: string
+          description: Workout name
+          example: Upper Body Day
+        imageUrl:
+          type: string
+          description: Image URL
+          example: http://localhost:8080/uploads/1_1699012345_abc123.jpg
+        description:
+          type: string
+          description: Journal description
+          example: Great workout today!
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+        workoutDate:
+          type: string
+          description: Workout date (from session)
+          format: date-time
+        workoutDuration:
+          type: integer
+          description: Workout duration (from session)
+          format: int32
+          example: 5400
+      description: Journal entry details
+    CreateWorkoutRequest:
+      required:
+        - exercises
+        - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 2
+          type: string
+          description: Workout name
+          example: Upper Body Day
+        description:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Workout description
+          example: Focus on chest and back
+        exercises:
+          type: array
+          description: List of exercises in the workout
+          items:
+            $ref: '#/components/schemas/WorkoutExerciseRequest'
+        scheduledDays:
+          type: array
+          description: Days to schedule this workout
+          example:
+            - MONDAY
+            - WEDNESDAY
+            - FRIDAY
+          items:
+            type: string
+            description: Days to schedule this workout
+            example: '["MONDAY","WEDNESDAY","FRIDAY"]'
+      description: Create new workout request
+    StartSessionRequest:
+      type: object
+      properties:
+        workoutId:
+          type: integer
+          description: Workout template ID (optional - can be custom session)
+          format: int64
+          example: 1
+        workoutName:
+          type: string
+          description: Custom workout name (required if workoutId is null)
+          example: Quick Morning Workout
+      description: Start a new workout session
+    RegisterRequest:
+      required:
+        - email
+        - name
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+          description: User email address
+          example: john.doe@example.com
+        password:
+          maxLength: 100
+          minLength: 6
+          type: string
+          description: User password (min 6 characters)
+          example: password123
+        name:
+          maxLength: 255
+          minLength: 2
+          type: string
+          description: User full name
+          example: John Doe
+        phoneNumber:
+          type: string
+          description: Phone number
+          example: '+1234567890'
+        gender:
+          type: string
+          description: Gender
+          example: MALE
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        age:
+          type: integer
+          description: Age
+          format: int32
+          example: 25
+        fitnessGoal:
+          type: string
+          description: Fitness goal
+          example: Muscle Gain
+        experienceLevel:
+          type: string
+          description: Experience level
+          example: Beginner
+          enum:
+            - Beginner
+            - Intermediate
+            - Advanced
+      description: User registration request
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (valid for 7 days)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: JWT refresh token (valid for 30 days)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        tokenType:
+          type: string
+          description: Token type
+          example: Bearer
+        user:
+          $ref: '#/components/schemas/UserResponse'
+      description: Authentication response with tokens and user info
+    ApiResponseAuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/AuthResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    RefreshTokenRequest:
+      required:
+        - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      description: Refresh token request
+    LoginRequest:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+          description: User email address
+          example: john.doe@example.com
+        password:
+          type: string
+          description: User password
+          example: password123
+      description: User login request
+    ApiResponseListWorkoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          type: array
+          description: Response data payload
+          items:
+            $ref: '#/components/schemas/WorkoutResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ApiResponseListWeeklyScheduleResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          type: array
+          description: Response data payload
+          items:
+            $ref: '#/components/schemas/WeeklyScheduleResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    WeeklyScheduleResponse:
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+          description: Day of week
+          example: MONDAY
+        workouts:
+          type: array
+          description: Workouts scheduled for this day
+          items:
+            $ref: '#/components/schemas/WorkoutResponse'
+        workoutCount:
+          type: integer
+          description: Number of workouts on this day
+          format: int32
+          example: 2
+      description: Weekly workout schedule
+    ApiResponseWeightHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/WeightHistoryResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    WeightHistoryResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          description: List of weight logs
+          items:
+            $ref: '#/components/schemas/WeightLogResponse'
+        currentWeight:
+          type: number
+          description: Current weight
+          example: 75.5
+        startingWeight:
+          type: number
+          description: Starting weight
+          example: 80
+        totalChange:
+          type: number
+          description: Total weight change
+          example: -4.5
+        averageWeight:
+          type: number
+          description: Average weight
+          example: 77.2
+        lowestWeight:
+          type: number
+          description: Lowest weight
+          example: 75
+        highestWeight:
+          type: number
+          description: Highest weight
+          example: 80.5
+      description: Weight tracking history with stats
+    ApiResponseSessionHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/SessionHistoryResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    SessionHistoryResponse:
+      type: object
+      properties:
+        sessions:
+          type: array
+          description: List of sessions
+          items:
+            $ref: '#/components/schemas/WorkoutSessionResponse'
+        currentPage:
+          type: integer
+          description: Current page
+          format: int32
+          example: 0
+        pageSize:
+          type: integer
+          description: Page size
+          format: int32
+          example: 20
+        totalPages:
+          type: integer
+          description: Total pages
+          format: int32
+          example: 5
+        totalSessions:
+          type: integer
+          description: Total sessions
+          format: int64
+          example: 95
+        hasNext:
+          type: boolean
+          description: Has next page
+          example: true
+        hasPrevious:
+          type: boolean
+          description: Has previous page
+          example: false
+      description: Paginated session history
+    ApiResponseStreakResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/StreakResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    StreakResponse:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+          description: Current streak (consecutive days)
+          format: int32
+          example: 7
+        longestStreak:
+          type: integer
+          description: Longest streak ever
+          format: int32
+          example: 14
+        streakStartDate:
+          type: string
+          description: Streak start date
+          format: date
+          example: '2025-10-27'
+        isActiveToday:
+          type: boolean
+          description: Is streak active today
+          example: true
+        daysUntilBreak:
+          type: integer
+          description: Days until next workout needed
+          format: int32
+          example: 0
+        message:
+          type: string
+          description: Streak status message
+          example: Great job! Keep it going!
+      description: Workout streak details
+    ApiResponseProgressStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/ProgressStatsResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ProgressStatsResponse:
+      type: object
+      properties:
+        totalWorkouts:
+          type: integer
+          description: Total completed workouts
+          format: int64
+          example: 45
+        currentStreak:
+          type: integer
+          description: Current workout streak (consecutive days)
+          format: int32
+          example: 7
+        longestStreak:
+          type: integer
+          description: Longest workout streak
+          format: int32
+          example: 14
+        totalWorkoutTimeSeconds:
+          type: integer
+          description: Total workout time in seconds
+          format: int64
+          example: 54000
+        totalWorkoutTimeFormatted:
+          type: string
+          description: Total workout time formatted (HH:mm:ss)
+          example: '15:00:00'
+        avgWorkoutDuration:
+          type: integer
+          description: Average workout duration in seconds
+          format: int32
+          example: 3600
+        avgWorkoutDurationFormatted:
+          type: string
+          description: Average workout duration formatted (HH:mm:ss)
+          example: '01:00:00'
+        workoutsThisWeek:
+          type: integer
+          description: Workouts this week
+          format: int32
+          example: 3
+        workoutsThisMonth:
+          type: integer
+          description: Workouts this month
+          format: int32
+          example: 12
+        totalJournals:
+          type: integer
+          description: Total journals written
+          format: int64
+          example: 45
+        currentWeight:
+          type: number
+          description: Current weight
+          example: 75.5
+        startingWeight:
+          type: number
+          description: Starting weight
+          example: 80
+        weightChange:
+          type: number
+          description: Weight change
+          example: -4.5
+        lastWorkoutDate:
+          type: string
+          description: Last workout date
+          format: date-time
+      description: Overall progress statistics
+    ApiResponsePageJournalEntryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/PageJournalEntryResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    PageJournalEntryResponse:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntryResponse'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        empty:
+          type: boolean
+      description: Response data payload
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+        paged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        unsorted:
+          type: boolean
+        sorted:
+          type: boolean
+    ApiResponseExerciseSearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/ExerciseSearchResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ExerciseResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Exercise ID
+          example: '123'
+        name:
+          type: string
+          description: Exercise name
+          example: Bench Press
+        description:
+          type: string
+          description: Exercise description (HTML format)
+        category:
+          type: string
+          description: Category/muscle group
+          example: Chest
+        primaryMuscles:
+          type: array
+          description: Primary muscles targeted
+          example:
+            - Pectoralis major
+          items:
+            type: string
+            description: Primary muscles targeted
+            example: '["Pectoralis major"]'
+        secondaryMuscles:
+          type: array
+          description: Secondary muscles targeted
+          example:
+            - Triceps
+          items:
+            type: string
+            description: Secondary muscles targeted
+            example: '["Triceps"]'
+        equipment:
+          type: array
+          description: Equipment needed
+          example:
+            - Barbell
+            - Bench
+          items:
+            type: string
+            description: Equipment needed
+            example: '["Barbell","Bench"]'
+        variations:
+          type: array
+          description: Exercise variations
+          example:
+            - '124'
+            - '125'
+          items:
+            type: string
+            description: Exercise variations
+            example: '["124","125"]'
+        difficulty:
+          type: string
+          description: Difficulty level
+          example: Intermediate
+      description: Exercise details
+    ExerciseSearchResponse:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of exercises
+          format: int32
+          example: 150
+        page:
+          type: integer
+          description: Current page number
+          format: int32
+          example: 1
+        pageSize:
+          type: integer
+          description: Page size
+          format: int32
+          example: 20
+        totalPages:
+          type: integer
+          description: Total pages
+          format: int32
+          example: 8
+        exercises:
+          type: array
+          description: List of exercises
+          items:
+            $ref: '#/components/schemas/ExerciseResponse'
+        nextPage:
+          type: string
+          description: Next page URL
+        previousPage:
+          type: string
+          description: Previous page URL
+      description: Exercise search results with pagination
+    ApiResponseExerciseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          $ref: '#/components/schemas/ExerciseResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ApiResponseListExerciseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          type: array
+          description: Response data payload
+          items:
+            $ref: '#/components/schemas/ExerciseResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ApiResponseListExerciseCategoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          type: array
+          description: Response data payload
+          items:
+            $ref: '#/components/schemas/ExerciseCategoryResponse'
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+    ExerciseCategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Category ID
+          example: '10'
+        name:
+          type: string
+          description: Category name
+          example: Chest
+        exerciseCount:
+          type: integer
+          description: Number of exercises in category
+          format: int32
+          example: 25
+      description: Exercise category/muscle group
+    ApiResponseVoid:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: Operation completed successfully
+        data:
+          type: object
+          description: Response data payload
+        error:
+          type: string
+          description: Error details (only present if success=false)
+        timestamp:
+          type: string
+          description: Response timestamp
+          format: date-time
+      description: Standard API response wrapper
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: JWT token obtained from /api/auth/login
+      # name: bearerAuth
+      scheme: bearer
+      bearerFormat: JWT
