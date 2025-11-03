@@ -3,17 +3,15 @@
 //
 
 import 'dart:async';
-
 // ignore: unused_import
 import 'dart:convert';
-import 'package:api/src/deserialize.dart';
-import 'package:dio/dio.dart';
 
-import 'package:api/src/model/api_response_auth_response.dart';
+import 'package:api/src/deserialize.dart';
 import 'package:api/src/model/auth_response.dart';
 import 'package:api/src/model/login_request.dart';
 import 'package:api/src/model/refresh_token_request.dart';
 import 'package:api/src/model/register_request.dart';
+import 'package:dio/dio.dart';
 
 class AuthenticationApi {
   final Dio _dio;
