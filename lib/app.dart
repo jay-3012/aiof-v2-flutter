@@ -1,4 +1,5 @@
 import 'package:aiof_flutter/src/main/views/main_page.dart';
+import 'package:aiof_flutter/src/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -6,11 +7,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme(context);
     return MaterialApp(
       title: 'AIOF (All in One Fitness)',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: theme.light,
+      darkTheme: theme.dark,
+      themeMode: ThemeMode.light,
       home: const MainPage(),
     );
   }
