@@ -1,5 +1,5 @@
 import 'package:aiof_flutter/core/extension/context.dart';
-import 'package:aiof_flutter/src/workout/components/add_exercise_item.dart';
+import 'package:aiof_flutter/src/workout/views/components/add_exercise_item.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 

@@ -1,6 +1,6 @@
 import 'package:aiof_flutter/core/extension/context.dart';
-import 'package:aiof_flutter/src/workout/components/empty_workout.dart';
-import 'package:aiof_flutter/src/workout/components/workout_item.dart';
+import 'package:aiof_flutter/src/workout/views/components/empty_workout.dart';
+import 'package:aiof_flutter/src/workout/views/components/workout_item.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
